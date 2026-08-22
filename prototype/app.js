@@ -350,7 +350,7 @@ function prototypeSwitcher() {
 
 function render() {
   document.documentElement.lang = state.lang === "pt" ? "pt-PT" : "en";
-  document.title = `${t("pageTitle")} | Protótipo`;
+  document.title = `${t("pageTitle")} | Prototype`;
   document.body.dataset.variant = state.variant;
 
   const variants = {

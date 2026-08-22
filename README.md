@@ -1,19 +1,19 @@
-# Post-medical exam education
+# Post-medical exam education prototype
 
-Protótipo descartável para decidir o design da página de indicações pós-exame.
+Throwaway UI prototype used to choose the design for the post-exam instructions page.
 
-## Abrir o protótipo
+## Run the prototype
 
 ```bash
 bun run prototype
 ```
 
-Depois abra <http://localhost:4173/prototype/?variant=A>.
+Open <http://localhost:4173/prototype/?variant=A>.
 
-As variantes A, B e C usam a mesma paleta do CUF Prepara, mas propõem estruturas diferentes. O seletor flutuante só existe na rota `/prototype/`.
+Variants A, B, and C use the CUF Prepara colour palette but propose different page structures. The floating switcher exists only on the `/prototype/` route.
 
-## Decisão
+## Decision
 
-A variante B, "Diretório clínico", foi aprovada como base da aplicação em 22 de agosto de 2026. Esta branch preserva as alternativas que suportaram a decisão. A implementação final vive na branch `main`.
+Variant B, "Clinical directory", was approved as the application design on August 22, 2026. This branch preserves the alternatives behind that decision. The production implementation lives on `main`.
 
-Os exames e os documentos são dados de demonstração. Nenhum conteúdo clínico está incluído nesta fase.
+The examinations and documents are demonstration data. This prototype contains no clinical guidance.
