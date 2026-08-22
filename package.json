@@ -1,0 +1,9 @@
+{
+  "name": "post-medical-exam-education",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prototype": "bun --hot prototype/server.ts"
+  },
+  "packageManager": "bun@1.3.10"
+}
