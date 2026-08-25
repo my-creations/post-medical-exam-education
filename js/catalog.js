@@ -1,45 +1,8 @@
-const EXAMS = [
-  {
-    id: "upper-endoscopy",
-    names: {
-      pt: "Endoscopia Digestiva Alta",
-      en: "Upper GI Endoscopy",
-    },
-    documents: { pt: null, en: null },
-  },
-  {
-    id: "lower-endoscopy",
-    names: {
-      pt: "Endoscopia Digestiva Baixa",
-      en: "Lower GI Endoscopy",
-    },
-    documents: { pt: null, en: null },
-  },
-  {
-    id: "bronchoscopy",
-    names: {
-      pt: "Broncofibroscopia",
-      en: "Fiberoptic Bronchoscopy",
-    },
-    documents: { pt: null, en: null },
-  },
-  {
-    id: "anoscopy",
-    names: {
-      pt: "Anuscopia de Alta Resolução",
-      en: "High-resolution Anoscopy",
-    },
-    documents: { pt: null, en: null },
-  },
-  {
-    id: "sigmoidoscopy",
-    names: {
-      pt: "Fibrosigmoidoscopia",
-      en: "Flexible Sigmoidoscopy",
-    },
-    documents: { pt: null, en: null },
-  },
-];
+import { EXAMS, SPECIALTIES } from "./documents.js";
+
+const ORDERED_EXAMS = SPECIALTIES.flatMap((specialty) =>
+  EXAMS.filter((exam) => exam.specialty === specialty.id),
+);
 
 function normalizeLanguage(language) {
   return language === "en" ? "en" : "pt";
@@ -48,11 +11,17 @@ function normalizeLanguage(language) {
 function localizeExam(exam, language, index) {
   const normalizedLanguage = normalizeLanguage(language);
   const documentUrl = exam.documents[normalizedLanguage];
+  const specialty = SPECIALTIES.find(({ id }) => id === exam.specialty);
 
   return {
     id: exam.id,
     number: String(index + 1).padStart(2, "0"),
     name: exam.names[normalizedLanguage],
+    specialty: {
+      id: specialty.id,
+      name: specialty.names[normalizedLanguage],
+    },
+    content: exam.content[normalizedLanguage],
     document: {
       available: Boolean(documentUrl),
       url: documentUrl,
@@ -61,13 +30,13 @@ function localizeExam(exam, language, index) {
 }
 
 export function getExamCatalogue(language = "pt") {
-  return EXAMS.map((exam, index) => localizeExam(exam, language, index));
+  return ORDERED_EXAMS.map((exam, index) => localizeExam(exam, language, index));
 }
 
 export function resolveExamSelection(examId, language = "pt") {
-  const examIndex = EXAMS.findIndex((exam) => exam.id === examId);
+  const examIndex = ORDERED_EXAMS.findIndex((exam) => exam.id === examId);
 
   if (examIndex === -1) return null;
 
-  return localizeExam(EXAMS[examIndex], language, examIndex);
+  return localizeExam(ORDERED_EXAMS[examIndex], language, examIndex);
 }

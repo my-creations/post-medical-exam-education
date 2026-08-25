@@ -1,6 +1,10 @@
 # Post-exam documents
 
-Only add PDF files approved by the clinical team.
+The PDF files in `pt/` and `en/` are generated from the same structured content used by the web reader.
+
+```bash
+bun run documents
+```
 
 Expected structure:
 
@@ -12,4 +16,4 @@ assets/documents/
     └── <exam-id>.pdf
 ```
 
-After adding a PDF, set its path in `js/catalog.js`. The view and download controls become active when the corresponding path is no longer `null`.
+The source is `js/documents.js`. Do not edit the generated PDFs by hand. Source-page mapping is recorded in [`docs/source-extraction.md`](../../docs/source-extraction.md).

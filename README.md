@@ -10,13 +10,36 @@ The QR code displayed in the service points to this address. The page content an
 
 ## Examinations
 
-- Upper GI Endoscopy
-- Lower GI Endoscopy
-- Fiberoptic Bronchoscopy
-- High-resolution Anoscopy
-- Flexible Sigmoidoscopy
+The catalogue contains the 12 unique procedures found in the supplied 13-page scan. Pages 7 and 9 are duplicate Anoscopy sheets.
 
-The clinical PDF files are not included yet. See [`assets/documents/README.md`](./assets/documents/README.md) when the approved files are ready.
+### Gastroenterology
+
+- Upper GI Endoscopy
+- Total Colonoscopy
+- Flexible Sigmoidoscopy
+- Capsule Endoscopy
+
+### Pulmonology
+
+- Fiberoptic Bronchoscopy
+- Thoracentesis
+
+### Gynecology
+
+- Hysteroscopy
+- MonaLisa Touch
+- Laser Treatment of the Cervix, Vagina or Vulva
+
+### Proctology
+
+- High-resolution Anoscopy
+- Anoscopy
+
+### Cardiology
+
+- Elective Electrical Cardioversion
+
+See [`assets/documents/README.md`](./assets/documents/README.md) and [`docs/source-extraction.md`](./docs/source-extraction.md) for document generation and source mapping.
 
 ## Development
 
@@ -28,6 +51,12 @@ bun run dev
 ```
 
 Open <http://127.0.0.1:4173>.
+
+Regenerate the bilingual PDFs from the web content with:
+
+```bash
+bun run documents
+```
 
 ## Checks
 

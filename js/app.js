@@ -7,7 +7,7 @@ const initialParams = new URLSearchParams(window.location.search);
 const state = {
   language: initialParams.get("lang") === "en" ? "en" : "pt",
   selectedExamId: initialParams.get("exam"),
-  viewerOpen: false,
+  readerOpen: false,
 };
 
 if (!resolveExamSelection(state.selectedExamId, state.language)) state.selectedExamId = null;
@@ -28,21 +28,41 @@ function brand(copy) {
     </a>`;
 }
 
+function examOption(exam) {
+  return `
+    <button
+      type="button"
+      class="exam-option ${state.selectedExamId === exam.id ? "is-selected" : ""}"
+      data-exam-id="${exam.id}"
+      aria-label="${exam.name}"
+      aria-pressed="${state.selectedExamId === exam.id}"
+    >
+      <span class="exam-number" aria-hidden="true">${exam.number}</span>
+      <span class="exam-name">${exam.name}</span>
+      <span class="exam-arrow" aria-hidden="true">→</span>
+    </button>`;
+}
+
 function examList(exams) {
-  return exams
+  const groups = exams.reduce((specialties, exam) => {
+    const current = specialties.at(-1);
+
+    if (current?.id === exam.specialty.id) {
+      current.exams.push(exam);
+    } else {
+      specialties.push({ ...exam.specialty, exams: [exam] });
+    }
+
+    return specialties;
+  }, []);
+
+  return groups
     .map(
-      (exam) => `
-        <button
-          type="button"
-          class="exam-option ${state.selectedExamId === exam.id ? "is-selected" : ""}"
-          data-exam-id="${exam.id}"
-          aria-label="${exam.name}"
-          aria-pressed="${state.selectedExamId === exam.id}"
-        >
-          <span class="exam-number" aria-hidden="true">${exam.number}</span>
-          <span class="exam-name">${exam.name}</span>
-          <span class="exam-arrow" aria-hidden="true">→</span>
-        </button>`,
+      (specialty) => `
+        <section class="exam-group" aria-labelledby="specialty-${specialty.id}">
+          <h2 class="exam-specialty" id="specialty-${specialty.id}">${specialty.name}</h2>
+          <div class="exam-options">${specialty.exams.map(examOption).join("")}</div>
+        </section>`,
     )
     .join("");
 }
@@ -56,46 +76,67 @@ function emptyDocument(copy) {
     </div>`;
 }
 
+function documentItems(items) {
+  if (!items?.length) return "";
+
+  return `<ul>${items
+    .map((item) => `<li>${item.text}${documentItems(item.items)}</li>`)
+    .join("")}</ul>`;
+}
+
+function webDocument(copy, exam) {
+  const content = exam.content;
+
+  return `
+    <article class="web-document" id="web-document" aria-labelledby="web-document-title">
+      <header>
+        <p>${copy.webVersion}</p>
+        <h2 id="web-document-title">${exam.name}</h2>
+        <p class="web-summary">${content.summary}</p>
+      </header>
+      ${content.sections
+        .map(
+          (section) => `
+            <section>
+              ${section.title ? `<h3>${section.title}</h3>` : ""}
+              ${(section.paragraphs ?? []).map((paragraph) => `<p>${paragraph}</p>`).join("")}
+              ${documentItems(section.items)}
+            </section>`,
+        )
+        .join("")}
+      <aside class="web-contact">
+        <h3>${content.contactTitle}</h3>
+        <p>${content.contact}</p>
+      </aside>
+    </article>`;
+}
+
 function selectedDocument(copy, exam) {
   const documentStatus = exam.document.available ? copy.available : copy.pending;
   const statusBody = exam.document.available ? copy.bilingual : copy.pendingBody;
 
   return `
     <div class="document-selected">
-      <span class="selection-check" aria-hidden="true">✓</span>
-      <p class="selection-label">${copy.selected}</p>
-      <h2>${exam.name}</h2>
-      <div class="file-card ${exam.document.available ? "is-available" : "is-pending"}">
-        <span class="file-type">PDF</span>
-        <span class="file-copy"><strong>${documentStatus}</strong><small>${statusBody}</small></span>
-        <span class="status-dot" aria-hidden="true"></span>
+      <div class="document-summary">
+        <span class="selection-check" aria-hidden="true">✓</span>
+        <p class="selection-label">${copy.selected}</p>
+        <h2>${exam.name}</h2>
+        <div class="file-card ${exam.document.available ? "is-available" : "is-pending"}">
+          <span class="file-type">PDF</span>
+          <span class="file-copy"><strong>${documentStatus}</strong><small>${statusBody}</small></span>
+          <span class="status-dot" aria-hidden="true"></span>
+        </div>
+        <div class="document-actions">
+          <button type="button" class="button button-primary" data-action="read">${state.readerOpen ? copy.hide : copy.view}</button>
+          ${
+            exam.document.available
+              ? `<a class="button button-secondary" href="${exam.document.url}" download>${copy.download}</a>`
+              : `<button type="button" class="button button-secondary" disabled>${copy.download}</button>`
+          }
+        </div>
+        <button type="button" class="choose-another" data-action="clear">← ${copy.chooseAnother}</button>
       </div>
-      <div class="document-actions">
-        <button type="button" class="button button-primary" data-action="view" ${exam.document.available ? "" : "disabled"}>${copy.view}</button>
-        ${
-          exam.document.available
-            ? `<a class="button button-secondary" href="${exam.document.url}" download>${copy.download}</a>`
-            : `<button type="button" class="button button-secondary" disabled>${copy.download}</button>`
-        }
-      </div>
-      <button type="button" class="choose-another" data-action="clear">← ${copy.chooseAnother}</button>
-    </div>`;
-}
-
-function viewer(copy, exam) {
-  if (!state.viewerOpen || !exam?.document.available) return "";
-
-  return `
-    <div class="viewer-backdrop" data-action="close-viewer">
-      <section class="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
-        <header>
-          <div><span>${copy.preview}</span><h2 id="viewer-title">${exam.name}</h2></div>
-          <button type="button" class="viewer-close" data-action="close-viewer" aria-label="${copy.close}">×</button>
-        </header>
-        <object data="${exam.document.url}" type="application/pdf">
-          <a href="${exam.document.url}" target="_blank" rel="noreferrer">${copy.pdfFallback}</a>
-        </object>
-      </section>
+      ${state.readerOpen ? webDocument(copy, exam) : ""}
     </div>`;
 }
 
@@ -119,7 +160,7 @@ function render() {
     <div class="page-shell">
       <header class="site-header">
         ${brand(copy)}
-        <div class="header-actions"><span class="immediate"><i></i>${copy.immediate}</span>${languageToggle(copy)}</div>
+        <div class="header-actions">${languageToggle(copy)}</div>
       </header>
       <main class="main-layout">
         <section class="exam-directory" aria-labelledby="page-title">
@@ -129,18 +170,16 @@ function render() {
             <p>${copy.prompt}</p>
           </div>
           <div class="exam-list">${examList(exams)}</div>
-          <p class="privacy-note"><span aria-hidden="true">◇</span>${copy.privacy}</p>
         </section>
         <section class="document-area" aria-live="polite">
-          <div class="document-sheet">
+          <div class="document-sheet ${state.readerOpen ? "is-reading" : ""}">
             <p class="document-kicker">${copy.document}</p>
             ${selectedExam ? selectedDocument(copy, selectedExam) : emptyDocument(copy)}
           </div>
           <p class="safety-note">${copy.safety}</p>
         </section>
       </main>
-    </div>
-    ${viewer(copy, selectedExam)}`;
+    </div>`;
 
   syncUrl();
 }
@@ -152,14 +191,14 @@ app.addEventListener("click", (event) => {
 
   if (languageButton) {
     state.language = languageButton.dataset.language;
-    state.viewerOpen = false;
+    state.readerOpen = false;
     render();
     return;
   }
 
   if (examButton) {
     state.selectedExamId = examButton.dataset.examId;
-    state.viewerOpen = false;
+    state.readerOpen = false;
     render();
     document
       .querySelector(".document-area")
@@ -171,26 +210,30 @@ app.addEventListener("click", (event) => {
 
   if (actionButton.dataset.action === "clear") {
     state.selectedExamId = null;
-    state.viewerOpen = false;
+    state.readerOpen = false;
     render();
+
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      const list = document.querySelector(".exam-list");
+      list?.querySelector(".exam-option")?.focus({ preventScroll: true });
+      list?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
-  if (actionButton.dataset.action === "view") {
-    state.viewerOpen = true;
+  if (actionButton.dataset.action === "read") {
+    state.readerOpen = !state.readerOpen;
     render();
-    document.querySelector(".viewer-close")?.focus();
-  }
-
-  if (actionButton.dataset.action === "close-viewer") {
-    if (event.target.closest(".viewer") && !event.target.closest(".viewer-close")) return;
-    state.viewerOpen = false;
-    render();
+    if (state.readerOpen) {
+      document
+        .querySelector("#web-document")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 });
 
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && state.viewerOpen) {
-    state.viewerOpen = false;
+  if (event.key === "Escape" && state.readerOpen) {
+    state.readerOpen = false;
     render();
   }
 });

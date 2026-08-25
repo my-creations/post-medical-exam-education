@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun --hot server.js",
     "build": "bun run scripts/build.js",
+    "documents": "bun run scripts/generate-documents.js",
     "qr": "bun run scripts/generate-qr.js",
     "test": "bun run test:unit",
     "test:unit": "vitest run",
