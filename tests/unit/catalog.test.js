@@ -3,15 +3,29 @@ import { describe, expect, it } from "vitest";
 import { getExamCatalogue, resolveExamSelection } from "../../js/catalog.js";
 
 describe("exam catalogue", () => {
-  it("returns the five approved examinations in European Portuguese by default", () => {
+  it("returns every unique examination from the supplied scan in European Portuguese", () => {
     const catalogue = getExamCatalogue();
 
     expect(catalogue.map((exam) => exam.name)).toEqual([
       "Endoscopia Digestiva Alta",
-      "Endoscopia Digestiva Baixa",
-      "Broncofibroscopia",
-      "Anuscopia de Alta Resolução",
+      "Colonoscopia Total",
       "Fibrosigmoidoscopia",
+      "Cápsula Endoscópica",
+      "Broncofibroscopia",
+      "Toracocentese",
+      "Histeroscopia",
+      "MonaLisa Touch",
+      "Tratamento Laser do Colo do Útero, Vagina ou Vulva",
+      "Anuscopia de Alta Resolução",
+      "Anuscopia",
+      "Cardioversão Elétrica Eletiva",
+    ]);
+    expect([...new Set(catalogue.map((exam) => exam.specialty.name))]).toEqual([
+      "Gastrenterologia",
+      "Pneumologia",
+      "Ginecologia",
+      "Proctologia",
+      "Cardiologia",
     ]);
   });
 
@@ -20,10 +34,17 @@ describe("exam catalogue", () => {
 
     expect(catalogue.map((exam) => exam.name)).toEqual([
       "Upper GI Endoscopy",
-      "Lower GI Endoscopy",
-      "Fiberoptic Bronchoscopy",
-      "High-resolution Anoscopy",
+      "Total Colonoscopy",
       "Flexible Sigmoidoscopy",
+      "Capsule Endoscopy",
+      "Fiberoptic Bronchoscopy",
+      "Thoracentesis",
+      "Hysteroscopy",
+      "MonaLisa Touch",
+      "Laser Treatment of the Cervix, Vagina or Vulva",
+      "High-resolution Anoscopy",
+      "Anoscopy",
+      "Elective Electrical Cardioversion",
     ]);
   });
 
@@ -33,14 +54,21 @@ describe("exam catalogue", () => {
 });
 
 describe("exam selection", () => {
-  it("resolves a known examination and reports that its PDF is pending", () => {
-    expect(resolveExamSelection("bronchoscopy", "en")).toEqual({
+  it("resolves a known examination with web content and its draft PDF", () => {
+    expect(resolveExamSelection("bronchoscopy", "en")).toMatchObject({
       id: "bronchoscopy",
-      number: "03",
+      number: "05",
       name: "Fiberoptic Bronchoscopy",
+      specialty: {
+        id: "pulmonology",
+        name: "Pulmonology",
+      },
+      content: {
+        summary: "Information and care after a bronchoscopy.",
+      },
       document: {
-        available: false,
-        url: null,
+        available: true,
+        url: "./assets/documents/en/bronchoscopy.pdf",
       },
     });
   });
